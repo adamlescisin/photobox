@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
-import { mockEvents, generateMockPhotos } from "@/lib/mock-data";
+import { useEvent } from "@/hooks/useEvents";
+import { usePhotos, useDeletePhoto, useTogglePhotoHidden } from "@/hooks/usePhotos";
 import { Camera, QrCode, Palette, ArrowLeft, Copy } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
@@ -9,9 +10,15 @@ import { toast } from "sonner";
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const event = mockEvents.find((e) => e.id === id);
+  const { data: event, isLoading } = useEvent(id);
+  const { data: photos } = usePhotos(id);
+  const deletePhoto = useDeletePhoto();
+  const toggleHidden = useTogglePhotoHidden();
   const [showQR, setShowQR] = useState(false);
-  const [capturing, setCapturing] = useState(false);
+
+  if (isLoading) {
+    return <div className="text-muted-foreground animate-pulse py-20 text-center">Načítání…</div>;
+  }
 
   if (!event) {
     return (
@@ -21,21 +28,23 @@ const EventDetail = () => {
     );
   }
 
-  const photos = generateMockPhotos(event.id, event.photoCount);
   const galleryUrl = `${window.location.origin}/g/${event.slug}`;
-
-  const handleCapture = () => {
-    setCapturing(true);
-    // Mock capture
-    setTimeout(() => {
-      setCapturing(false);
-      toast.success("Fotka pořízena a uložena do galerie!");
-    }, 2000);
-  };
 
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(galleryUrl);
     toast.success("URL zkopírována do schránky");
+  };
+
+  const handleDelete = async (photoId: string) => {
+    await deletePhoto.mutateAsync(photoId);
+    toast.success("Fotka smazána");
+  };
+
+  const handleToggleHide = async (photoId: string) => {
+    const photo = photos?.find((p) => p.id === photoId);
+    if (!photo) return;
+    await toggleHidden.mutateAsync({ id: photoId, hidden: !photo.hidden });
+    toast.success("Viditelnost změněna");
   };
 
   return (
@@ -50,19 +59,7 @@ const EventDetail = () => {
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <button
-          onClick={handleCapture}
-          disabled={capturing}
-          className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-glow hover:border-primary/30 disabled:opacity-50"
-        >
-          <div className={`flex h-12 w-12 items-center justify-center rounded-xl gradient-accent ${capturing ? 'animate-pulse-glow' : ''}`}>
-            <Camera className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <span className="text-sm font-medium">{capturing ? "Focení…" : "Vyfotit"}</span>
-        </button>
-
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <button
           onClick={() => setShowQR(!showQR)}
           className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-glow hover:border-primary/30"
@@ -92,7 +89,6 @@ const EventDetail = () => {
         </button>
       </div>
 
-      {/* QR Code */}
       {showQR && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
@@ -112,18 +108,21 @@ const EventDetail = () => {
         </motion.div>
       )}
 
-      {/* Photos */}
       <div>
         <h2 className="font-display text-lg font-semibold mb-3">
-          Fotky ({photos.length})
+          Fotky ({photos?.length ?? 0})
         </h2>
-        <PhotoGrid
-          photos={photos}
-          eventSlug={event.slug}
-          isAdmin
-          onDelete={(id) => toast.success(`Fotka ${id} smazána`)}
-          onToggleHide={(id) => toast.success(`Viditelnost fotky ${id} změněna`)}
-        />
+        {photos && photos.length > 0 ? (
+          <PhotoGrid
+            photos={photos}
+            eventSlug={event.slug}
+            isAdmin
+            onDelete={handleDelete}
+            onToggleHide={handleToggleHide}
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground">Žádné fotky.</p>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { Photo } from "@/lib/mock-data";
+import type { Photo } from "@/hooks/usePhotos";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
@@ -23,7 +23,7 @@ const PhotoGrid = ({ photos, eventSlug, isAdmin, onDelete, onToggleHide }: Photo
         >
           <Link to={isAdmin ? "#" : `/g/${eventSlug}/p/${photo.id}`}>
             <img
-              src={photo.thumbnailUrl}
+              src={photo.thumbnail_url}
               alt={photo.caption || `Fotka ${index + 1}`}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"

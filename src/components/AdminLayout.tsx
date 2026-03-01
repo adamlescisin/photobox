@@ -1,10 +1,24 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 import { Menu } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, isAdmin, isEventAdmin, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Načítání…</div>
+      </div>
+    );
+  }
+
+  if (!user || (!isAdmin && !isEventAdmin)) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="flex h-screen bg-background">

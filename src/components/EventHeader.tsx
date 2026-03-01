@@ -1,24 +1,29 @@
-import { Event } from "@/lib/mock-data";
+import type { Event, EventStyle } from "@/hooks/useEvents";
 import { Camera } from "lucide-react";
 
 interface EventHeaderProps {
   event: Event;
+  style?: EventStyle | null;
   showBranding?: boolean;
 }
 
-const EventHeader = ({ event, showBranding = true }: EventHeaderProps) => {
-  const primaryColor = event.style?.primaryColor || "38 92% 50%";
+const EventHeader = ({ event, style, showBranding = true }: EventHeaderProps) => {
+  const primaryColor = style?.primary_color || "38 92% 50%";
 
   return (
     <header className="relative overflow-hidden border-b border-border">
       <div className="gradient-hero px-4 py-6 sm:py-8">
         <div className="container mx-auto flex items-center gap-4">
-          <div
-            className="flex h-12 w-12 items-center justify-center rounded-xl"
-            style={{ background: `hsl(${primaryColor} / 0.15)` }}
-          >
-            <Camera className="h-6 w-6" style={{ color: `hsl(${primaryColor})` }} />
-          </div>
+          {style?.logo_url ? (
+            <img src={style.logo_url} alt="Logo" className="h-12 w-12 rounded-xl object-contain" />
+          ) : (
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-xl"
+              style={{ background: `hsl(${primaryColor} / 0.15)` }}
+            >
+              <Camera className="h-6 w-6" style={{ color: `hsl(${primaryColor})` }} />
+            </div>
+          )}
           <div>
             <h1 className="font-display text-xl sm:text-2xl font-bold tracking-tight">
               {event.name}

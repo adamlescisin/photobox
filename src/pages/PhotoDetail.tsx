@@ -1,18 +1,27 @@
 import { useParams, Link } from "react-router-dom";
-import { mockEvents, generateMockPhotos } from "@/lib/mock-data";
+import { usePhoto } from "@/hooks/usePhotos";
 import { ArrowLeft, Download } from "lucide-react";
 import { motion } from "framer-motion";
 
 const PhotoDetail = () => {
   const { slug, photoId } = useParams<{ slug: string; photoId: string }>();
-  const event = mockEvents.find((e) => e.slug === slug);
+  const { data: photo, isLoading } = usePhoto(photoId);
 
-  if (!event) return null;
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Načítání…</div>
+      </div>
+    );
+  }
 
-  const photos = generateMockPhotos(event.id, event.photoCount);
-  const photo = photos.find((p) => p.id === photoId);
-
-  if (!photo) return null;
+  if (!photo) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-muted-foreground">Fotka nenalezena.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -25,7 +34,7 @@ const PhotoDetail = () => {
           Zpět do galerie
         </Link>
         <a
-          href={photo.originalUrl}
+          href={photo.original_url}
           download
           target="_blank"
           rel="noopener noreferrer"
@@ -40,7 +49,7 @@ const PhotoDetail = () => {
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4 }}
-          src={photo.originalUrl}
+          src={photo.original_url}
           alt={photo.caption || "Fotka"}
           className="max-h-[80vh] max-w-full rounded-lg object-contain shadow-card"
         />
