@@ -2,17 +2,27 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login — will connect to backend later
-    navigate("/admin");
+    setLoading(true);
+    const { error } = await signIn(email, password);
+    setLoading(false);
+    if (error) {
+      toast.error(error);
+    } else {
+      navigate("/admin");
+    }
   };
 
   return (
@@ -64,9 +74,10 @@ const Login = () => {
           </div>
           <button
             type="submit"
-            className="w-full rounded-xl gradient-accent py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:scale-[1.02] active:scale-95"
+            disabled={loading}
+            className="w-full rounded-xl gradient-accent py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-50"
           >
-            Přihlásit se
+            {loading ? "Přihlašování…" : "Přihlásit se"}
           </button>
         </form>
       </motion.div>

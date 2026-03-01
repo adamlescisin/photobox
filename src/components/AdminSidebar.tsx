@@ -1,5 +1,6 @@
-import { Link, useLocation } from "react-router-dom";
-import { Camera, LayoutDashboard, Calendar, Settings, LogOut, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Camera, LayoutDashboard, Calendar, LogOut, X } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AdminSidebarProps {
   open?: boolean;
@@ -9,15 +10,20 @@ interface AdminSidebarProps {
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/admin" },
   { label: "Akce", icon: Calendar, to: "/admin/events" },
-  { label: "Nastavení", icon: Settings, to: "/admin/settings" },
 ];
 
 const AdminSidebar = ({ open, onClose }: AdminSidebarProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut, user } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <>
-      {/* Mobile overlay */}
       {open && (
         <div className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden" onClick={onClose} />
       )}
@@ -40,7 +46,7 @@ const AdminSidebar = ({ open, onClose }: AdminSidebarProps) => {
 
         <nav className="flex-1 space-y-1 p-3">
           {navItems.map((item) => {
-            const active = location.pathname === item.to || 
+            const active = location.pathname === item.to ||
               (item.to !== "/admin" && location.pathname.startsWith(item.to));
             return (
               <Link
@@ -61,13 +67,16 @@ const AdminSidebar = ({ open, onClose }: AdminSidebarProps) => {
         </nav>
 
         <div className="border-t border-border p-3">
-          <Link
-            to="/login"
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+          {user && (
+            <p className="px-3 pb-2 text-xs text-muted-foreground truncate">{user.email}</p>
+          )}
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
           >
             <LogOut className="h-4 w-4" />
             Odhlásit se
-          </Link>
+          </button>
         </div>
       </aside>
     </>
