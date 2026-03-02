@@ -1,12 +1,15 @@
 import { useParams, Link } from "react-router-dom";
 import { useEvent } from "@/hooks/useEvents";
 import { usePhotos, useDeletePhoto, useTogglePhotoHidden } from "@/hooks/usePhotos";
-import { Camera, QrCode, Palette, ArrowLeft, Copy } from "lucide-react";
+import { Camera, QrCode, Palette, ArrowLeft, Copy, Lock, LockOpen } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 import PhotoGrid from "@/components/PhotoGrid";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { setEventPassword } from "@/lib/event-password";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +18,16 @@ const EventDetail = () => {
   const deletePhoto = useDeletePhoto();
   const toggleHidden = useTogglePhotoHidden();
   const [showQR, setShowQR] = useState(false);
+  const [pwEnabled, setPwEnabled] = useState(false);
+  const [pwValue, setPwValue] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwInitialized, setPwInitialized] = useState(false);
+
+  // Sync password toggle with event data
+  if (event && !pwInitialized) {
+    setPwEnabled(!!event.password_hash);
+    setPwInitialized(true);
+  }
 
   if (isLoading) {
     return <div className="text-muted-foreground animate-pulse py-20 text-center">Načítání…</div>;
@@ -45,6 +58,20 @@ const EventDetail = () => {
     if (!photo) return;
     await toggleHidden.mutateAsync({ id: photoId, hidden: !photo.hidden });
     toast.success("Viditelnost změněna");
+  };
+
+  const handlePasswordSave = async () => {
+    if (!id) return;
+    setPwSaving(true);
+    try {
+      await setEventPassword(id, pwEnabled ? pwValue || null : null);
+      toast.success(pwEnabled ? "Heslo nastaveno" : "Ochrana heslem odstraněna");
+      setPwValue("");
+    } catch {
+      toast.error("Nepodařilo se uložit heslo");
+    } finally {
+      setPwSaving(false);
+    }
   };
 
   return (
@@ -110,6 +137,33 @@ const EventDetail = () => {
           </button>
         </motion.div>
       )}
+
+      {/* Password Management */}
+      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {pwEnabled ? <Lock className="h-4 w-4 text-primary" /> : <LockOpen className="h-4 w-4 text-muted-foreground" />}
+            <Label>Ochrana heslem</Label>
+          </div>
+          <Switch checked={pwEnabled} onCheckedChange={setPwEnabled} />
+        </div>
+        {pwEnabled && (
+          <input
+            type="password"
+            value={pwValue}
+            onChange={(e) => setPwValue(e.target.value)}
+            placeholder="Nové heslo (ponechte prázdné pro zachování)"
+            className="w-full rounded-xl border border-border bg-secondary px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+        )}
+        <button
+          onClick={handlePasswordSave}
+          disabled={pwSaving}
+          className="rounded-lg bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground hover:bg-muted transition-colors disabled:opacity-50"
+        >
+          {pwSaving ? "Ukládání…" : "Uložit heslo"}
+        </button>
+      </div>
 
       <div>
         <h2 className="font-display text-lg font-semibold mb-3">
