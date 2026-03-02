@@ -81,12 +81,15 @@ const EventDetail = () => {
           <span className="text-sm font-medium">Galerie</span>
         </Link>
 
-        <button className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-glow hover:border-primary/30">
+        <Link
+          to={`/admin/events/${id}/style`}
+          className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-glow hover:border-primary/30"
+        >
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
             <Palette className="h-6 w-6 text-primary" />
           </div>
           <span className="text-sm font-medium">Styling</span>
-        </button>
+        </Link>
       </div>
 
       {showQR && (

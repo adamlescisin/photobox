@@ -60,6 +60,10 @@ export type Database = {
           primary_color: string | null
           secondary_color: string | null
           updated_at: string
+          watermark_show_date: boolean
+          watermark_show_frame: boolean
+          watermark_show_logo: boolean
+          watermark_show_name: boolean
           watermark_url: string | null
         }
         Insert: {
@@ -71,6 +75,10 @@ export type Database = {
           primary_color?: string | null
           secondary_color?: string | null
           updated_at?: string
+          watermark_show_date?: boolean
+          watermark_show_frame?: boolean
+          watermark_show_logo?: boolean
+          watermark_show_name?: boolean
           watermark_url?: string | null
         }
         Update: {
@@ -82,6 +90,10 @@ export type Database = {
           primary_color?: string | null
           secondary_color?: string | null
           updated_at?: string
+          watermark_show_date?: boolean
+          watermark_show_frame?: boolean
+          watermark_show_logo?: boolean
+          watermark_show_name?: boolean
           watermark_url?: string | null
         }
         Relationships: [
