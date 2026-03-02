@@ -1,1 +1,4 @@
 project_id = "cntzmwdvyamocufcrtwf"
+
+[functions.event-password]
+verify_jwt = false
