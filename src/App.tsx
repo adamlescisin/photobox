@@ -13,6 +13,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import EventList from "./pages/admin/EventList";
 import EventDetail from "./pages/admin/EventDetail";
 import EventNew from "./pages/admin/EventNew";
+import EventStyleEditor from "./pages/admin/EventStyleEditor";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="events" element={<EventList />} />
               <Route path="events/new" element={<EventNew />} />
               <Route path="events/:id" element={<EventDetail />} />
+              <Route path="events/:id/style" element={<EventStyleEditor />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
