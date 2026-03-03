@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useEvent } from "@/hooks/useEvents";
 import { usePhotos, useDeletePhoto, useTogglePhotoHidden } from "@/hooks/usePhotos";
-import { Camera, QrCode, Palette, ArrowLeft, Copy, Lock, LockOpen } from "lucide-react";
+import { Camera, QrCode, Palette, ArrowLeft, Copy, Lock, LockOpen, Aperture } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 import PhotoGrid from "@/components/PhotoGrid";
@@ -106,6 +106,17 @@ const EventDetail = () => {
             <Copy className="h-6 w-6 text-primary" />
           </div>
           <span className="text-sm font-medium">Galerie</span>
+        </Link>
+
+        <Link
+          to={`/g/${event.slug}/action`}
+          target="_blank"
+          className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-glow hover:border-primary/30"
+        >
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+            <Aperture className="h-6 w-6 text-primary" />
+          </div>
+          <span className="text-sm font-medium">Action!</span>
         </Link>
 
         <Link
