@@ -1,5 +1,5 @@
-import { useParams, Link } from "react-router-dom";
-import { useEventBySlug } from "@/hooks/useEvents";
+import { useParams } from "react-router-dom";
+import { useEventBySlug, useEventStyle } from "@/hooks/useEvents";
 import { useRef, useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { QRCodeSVG } from "qrcode.react";
@@ -12,6 +12,7 @@ type Phase = "viewfinder" | "countdown" | "uploading" | "result";
 const CameraAction = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: event, isLoading } = useEventBySlug(slug);
+  const { data: style } = useEventStyle(event?.id);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -23,7 +24,6 @@ const CameraAction = () => {
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
 
   const startCamera = useCallback(async (facing: "user" | "environment") => {
-    // Stop any existing stream
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
     }
@@ -68,6 +68,85 @@ const CameraAction = () => {
     }, 1000);
   };
 
+  /** Load an image from URL and return it as HTMLImageElement */
+  const loadImage = (url: string): Promise<HTMLImageElement> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = url;
+    });
+
+  /** Draw watermark elements onto a canvas based on event style settings */
+  const applyWatermark = async (
+    ctx: CanvasRenderingContext2D,
+    w: number,
+    h: number
+  ) => {
+    if (!style || !event) return;
+
+    const padding = Math.round(w * 0.03);
+    const fontSize = Math.round(w * 0.025);
+    ctx.font = `600 ${fontSize}px 'Space Grotesk', sans-serif`;
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.shadowColor = "rgba(0,0,0,0.6)";
+    ctx.shadowBlur = 4;
+
+    // Frame
+    if (style.watermark_show_frame) {
+      const inset = Math.round(w * 0.02);
+      ctx.strokeStyle = "rgba(255,255,255,0.5)";
+      ctx.lineWidth = Math.max(2, Math.round(w * 0.003));
+      ctx.strokeRect(inset, inset, w - inset * 2, h - inset * 2);
+    }
+
+    let bottomY = h - padding;
+
+    // Date (bottom-right)
+    if (style.watermark_show_date) {
+      ctx.textAlign = "right";
+      ctx.fillText(event.date, w - padding, bottomY);
+    }
+
+    // Name (bottom-left)
+    if (style.watermark_show_name) {
+      ctx.textAlign = "left";
+      ctx.fillText(event.name, padding, bottomY);
+    }
+
+    // Logo (top-right corner)
+    if (style.watermark_show_logo && style.logo_url) {
+      try {
+        const logoImg = await loadImage(style.logo_url);
+        const logoH = Math.round(h * 0.08);
+        const logoW = Math.round((logoImg.width / logoImg.height) * logoH);
+        ctx.shadowBlur = 0;
+        ctx.drawImage(logoImg, w - padding - logoW, padding, logoW, logoH);
+      } catch {
+        // logo load failed – skip
+      }
+    }
+
+    // Custom watermark image (center)
+    if (style.watermark_url) {
+      try {
+        const wmImg = await loadImage(style.watermark_url);
+        const wmH = Math.round(h * 0.12);
+        const wmW = Math.round((wmImg.width / wmImg.height) * wmH);
+        ctx.globalAlpha = 0.4;
+        ctx.shadowBlur = 0;
+        ctx.drawImage(wmImg, (w - wmW) / 2, (h - wmH) / 2, wmW, wmH);
+        ctx.globalAlpha = 1;
+      } catch {
+        // watermark load failed – skip
+      }
+    }
+
+    // Reset shadow
+    ctx.shadowBlur = 0;
+  };
+
   const capturePhoto = async () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -78,6 +157,9 @@ const CameraAction = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.drawImage(video, 0, 0);
+
+    // Apply watermark onto the canvas before exporting
+    await applyWatermark(ctx, canvas.width, canvas.height);
 
     setPhase("uploading");
 
@@ -94,13 +176,12 @@ const CameraAction = () => {
       const thumbPath = `${event.id}/thumbnails/${fileName}`;
 
       try {
-        // Upload original
         const { error: upErr } = await supabase.storage
           .from("event-photos")
           .upload(originalPath, blob, { contentType: "image/jpeg" });
         if (upErr) throw upErr;
 
-        // Create a smaller thumbnail via canvas
+        // Create thumbnail
         const thumbCanvas = document.createElement("canvas");
         const maxThumb = 400;
         const scale = Math.min(maxThumb / canvas.width, maxThumb / canvas.height, 1);
@@ -125,7 +206,6 @@ const CameraAction = () => {
           .from("event-photos")
           .getPublicUrl(thumbPath);
 
-        // Insert DB record
         const { error: dbErr } = await supabase.from("photos").insert({
           event_id: event.id,
           original_url: urlData.publicUrl,
@@ -165,10 +245,10 @@ const CameraAction = () => {
   }
 
   const galleryUrl = `${window.location.origin}/g/${event.slug}`;
+  const primaryColor = style?.primary_color || undefined;
 
   return (
     <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
-      {/* Hidden canvas for capture */}
       <canvas ref={canvasRef} className="hidden" />
 
       {/* Camera viewfinder / countdown / uploading */}
@@ -198,7 +278,8 @@ const CameraAction = () => {
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.5, opacity: 0 }}
                   transition={{ duration: 0.4 }}
-                  className="font-display text-9xl font-bold text-primary drop-shadow-lg"
+                  className="font-display text-9xl font-bold drop-shadow-lg"
+                  style={primaryColor ? { color: `hsl(${primaryColor})` } : undefined}
                 >
                   {countdown}
                 </motion.span>
@@ -213,8 +294,15 @@ const CameraAction = () => {
             </div>
           )}
 
-          {/* Event name badge */}
-          <div className="absolute top-4 left-4 z-20">
+          {/* Event branding badge (logo + name) */}
+          <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
+            {style?.logo_url && (
+              <img
+                src={style.logo_url}
+                alt="Logo"
+                className="h-8 w-auto rounded"
+              />
+            )}
             <span className="rounded-full bg-card/80 backdrop-blur-sm px-4 py-1.5 text-sm font-medium text-foreground">
               {event.name}
             </span>
@@ -261,6 +349,13 @@ const CameraAction = () => {
           <button
             onClick={startCountdown}
             className="flex items-center gap-3 rounded-full gradient-accent px-8 py-4 text-lg font-display font-semibold text-accent-foreground shadow-glow transition-transform hover:scale-105 active:scale-95"
+            style={
+              primaryColor
+                ? {
+                    background: `linear-gradient(135deg, hsl(${primaryColor}), hsl(${primaryColor} / 0.8))`,
+                  }
+                : undefined
+            }
           >
             <Camera className="h-6 w-6" />
             Udělej si vzpomínku
@@ -271,6 +366,13 @@ const CameraAction = () => {
           <button
             onClick={resetForNext}
             className="flex items-center gap-3 rounded-full gradient-accent px-8 py-4 text-lg font-display font-semibold text-accent-foreground shadow-glow transition-transform hover:scale-105 active:scale-95"
+            style={
+              primaryColor
+                ? {
+                    background: `linear-gradient(135deg, hsl(${primaryColor}), hsl(${primaryColor} / 0.8))`,
+                  }
+                : undefined
+            }
           >
             <Camera className="h-6 w-6" />
             Další vzpomínka
