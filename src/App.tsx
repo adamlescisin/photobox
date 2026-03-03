@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import EventGallery from "./pages/EventGallery";
 import PhotoDetail from "./pages/PhotoDetail";
+import CameraAction from "./pages/CameraAction";
 import Login from "./pages/Login";
 import AdminLayout from "./components/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/g/:slug" element={<EventGallery />} />
             <Route path="/g/:slug/p/:photoId" element={<PhotoDetail />} />
+            <Route path="/g/:slug/action" element={<CameraAction />} />
             <Route path="/login" element={<Login />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Dashboard />} />
