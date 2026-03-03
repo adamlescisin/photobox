@@ -1,25 +1,27 @@
 import { useParams } from "react-router-dom";
 import { useEventBySlug, useEventStyle } from "@/hooks/useEvents";
+import { usePhotos } from "@/hooks/usePhotos";
 import { useRef, useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { QRCodeSVG } from "qrcode.react";
-import { Camera, RotateCcw } from "lucide-react";
+import { Camera, RotateCcw, Images, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
-type Phase = "viewfinder" | "countdown" | "uploading" | "result";
+type Phase = "viewfinder" | "countdown" | "uploading" | "result" | "gallery";
 
 const CameraAction = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: event, isLoading } = useEventBySlug(slug);
   const { data: style } = useEventStyle(event?.id);
+  const { data: photos } = usePhotos(event?.id);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   const [phase, setPhase] = useState<Phase>("viewfinder");
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(3);
   const [capturedUrl, setCapturedUrl] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
 
@@ -56,8 +58,8 @@ const CameraAction = () => {
 
   const startCountdown = () => {
     setPhase("countdown");
-    setCountdown(5);
-    let c = 5;
+    setCountdown(3);
+    let c = 3;
     const interval = setInterval(() => {
       c -= 1;
       setCountdown(c);
@@ -251,8 +253,7 @@ const CameraAction = () => {
     <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Camera viewfinder / countdown / uploading */}
-      {phase !== "result" && (
+      {phase !== "result" && phase !== "gallery" && (
         <div className="relative flex-1 flex items-center justify-center bg-black">
           <video
             ref={videoRef}
@@ -343,8 +344,41 @@ const CameraAction = () => {
         </div>
       )}
 
+      {/* Gallery screen */}
+      {phase === "gallery" && (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="shrink-0 flex items-center gap-3 p-4 border-b border-border">
+            <button
+              onClick={() => setPhase("result")}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Zpět na Další vzpomínku
+            </button>
+            <span className="ml-auto text-sm text-muted-foreground">
+              {photos?.length ?? 0} fotek
+            </span>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {photos?.filter(p => !p.hidden).map((photo) => (
+                <img
+                  key={photo.id}
+                  src={photo.thumbnail_url}
+                  alt={photo.caption || "Fotka"}
+                  className="w-full aspect-square object-cover rounded-lg border border-border"
+                />
+              ))}
+            </div>
+            {(!photos || photos.filter(p => !p.hidden).length === 0) && (
+              <p className="text-center text-muted-foreground py-12">Zatím žádné fotky.</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Bottom action bar */}
-      <div className="shrink-0 flex items-center justify-center p-6 pb-8">
+      <div className="shrink-0 flex items-center justify-center gap-3 p-6 pb-8">
         {phase === "viewfinder" && (
           <button
             onClick={startCountdown}
@@ -363,20 +397,29 @@ const CameraAction = () => {
         )}
 
         {phase === "result" && (
-          <button
-            onClick={resetForNext}
-            className="flex items-center gap-3 rounded-full gradient-accent px-8 py-4 text-lg font-display font-semibold text-accent-foreground shadow-glow transition-transform hover:scale-105 active:scale-95"
-            style={
-              primaryColor
-                ? {
-                    background: `linear-gradient(135deg, hsl(${primaryColor}), hsl(${primaryColor} / 0.8))`,
-                  }
-                : undefined
-            }
-          >
-            <Camera className="h-6 w-6" />
-            Další vzpomínka
-          </button>
+          <>
+            <button
+              onClick={resetForNext}
+              className="flex items-center gap-3 rounded-full gradient-accent px-6 py-4 text-base font-display font-semibold text-accent-foreground shadow-glow transition-transform hover:scale-105 active:scale-95"
+              style={
+                primaryColor
+                  ? {
+                      background: `linear-gradient(135deg, hsl(${primaryColor}), hsl(${primaryColor} / 0.8))`,
+                    }
+                  : undefined
+              }
+            >
+              <Camera className="h-5 w-5" />
+              Další vzpomínka
+            </button>
+            <button
+              onClick={() => setPhase("gallery")}
+              className="flex items-center gap-3 rounded-full border border-border bg-card px-6 py-4 text-base font-display font-semibold text-foreground transition-transform hover:scale-105 active:scale-95"
+            >
+              <Images className="h-5 w-5" />
+              Galerie akce
+            </button>
+          </>
         )}
       </div>
     </div>
