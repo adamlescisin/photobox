@@ -337,11 +337,24 @@ const EventStyleEditor = () => {
             <CardContent>
               <div
                 className="relative aspect-[4/3] rounded-lg overflow-hidden"
-                style={{ background: `hsl(${secondaryColor})` }}
+                style={
+                  removeBackground && backgroundImageUrl
+                    ? { backgroundImage: `url(${backgroundImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+                    : removeBackground
+                    ? { background: `hsl(${primaryColor})` }
+                    : { background: `hsl(${secondaryColor})` }
+                }
               >
                 {/* Placeholder photo */}
                 <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">
-                  Ukázková fotka
+                  {removeBackground ? (
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-2xl">🧑</span>
+                      <span className="text-xs opacity-70">Osoba (pozadí odstraněno)</span>
+                    </div>
+                  ) : (
+                    "Ukázková fotka"
+                  )}
                 </div>
 
                 {/* Frame overlay */}
