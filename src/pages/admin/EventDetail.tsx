@@ -100,9 +100,52 @@ const EventDetail = () => {
         <Link to="/admin/events" className="text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <div>
-          <h1 className="font-display text-2xl font-bold">{event.name}</h1>
-          <p className="text-sm text-muted-foreground">{event.date}</p>
+        <div className="flex-1 min-w-0">
+          {editingName ? (
+            <div className="flex items-center gap-2">
+              <input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="font-display text-2xl font-bold bg-secondary border border-border rounded-lg px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary/50 w-full"
+                autoFocus
+              />
+              <button onClick={async () => {
+                if (!editName.trim() || !id) return;
+                await updateEvent.mutateAsync({ id, name: editName.trim() });
+                setEditingName(false);
+                toast.success("Název aktualizován");
+              }} className="text-primary hover:text-primary/80"><Check className="h-5 w-5" /></button>
+              <button onClick={() => setEditingName(false)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 group">
+              <h1 className="font-display text-2xl font-bold">{event.name}</h1>
+              <button onClick={() => { setEditName(event.name); setEditingName(true); }} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground transition-opacity"><Pencil className="h-4 w-4" /></button>
+            </div>
+          )}
+          {editingDate ? (
+            <div className="flex items-center gap-2 mt-1">
+              <input
+                type="date"
+                value={editDate}
+                onChange={(e) => setEditDate(e.target.value)}
+                className="text-sm bg-secondary border border-border rounded-lg px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                autoFocus
+              />
+              <button onClick={async () => {
+                if (!editDate || !id) return;
+                await updateEvent.mutateAsync({ id, date: editDate });
+                setEditingDate(false);
+                toast.success("Datum aktualizováno");
+              }} className="text-primary hover:text-primary/80"><Check className="h-4 w-4" /></button>
+              <button onClick={() => setEditingDate(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 group">
+              <p className="text-sm text-muted-foreground">{event.date}</p>
+              <button onClick={() => { setEditDate(event.date); setEditingDate(true); }} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground transition-opacity"><Pencil className="h-3.5 w-3.5" /></button>
+            </div>
+          )}
         </div>
       </div>
 
