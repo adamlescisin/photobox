@@ -78,7 +78,7 @@ const EventStyleEditor = () => {
 
   const handleFileUpload = async (
     file: File,
-    type: "logo" | "watermark"
+    type: "logo" | "watermark" | "background"
   ) => {
     if (!id) return;
     try {
