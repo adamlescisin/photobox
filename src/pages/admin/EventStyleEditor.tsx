@@ -64,6 +64,8 @@ const EventStyleEditor = () => {
           watermark_show_date: wmShowDate,
           watermark_show_logo: wmShowLogo,
           watermark_show_frame: wmShowFrame,
+          remove_background: removeBackground,
+          background_image_url: backgroundImageUrl,
         },
       });
       toast.success("Styling uložen");
