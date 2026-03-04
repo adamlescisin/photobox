@@ -44,6 +44,8 @@ const EventStyleEditor = () => {
       setWmShowDate(style.watermark_show_date ?? false);
       setWmShowLogo(style.watermark_show_logo ?? false);
       setWmShowFrame(style.watermark_show_frame ?? false);
+      setRemoveBackground((style as any).remove_background ?? false);
+      setBackgroundImageUrl(style.background_image_url);
     }
   }, [style]);
 
