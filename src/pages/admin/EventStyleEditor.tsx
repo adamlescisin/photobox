@@ -26,10 +26,13 @@ const EventStyleEditor = () => {
   const [wmShowDate, setWmShowDate] = useState(false);
   const [wmShowLogo, setWmShowLogo] = useState(false);
   const [wmShowFrame, setWmShowFrame] = useState(false);
+  const [removeBackground, setRemoveBackground] = useState(false);
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const watermarkInputRef = useRef<HTMLInputElement>(null);
+  const backgroundInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (style) {
