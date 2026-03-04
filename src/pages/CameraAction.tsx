@@ -336,6 +336,20 @@ const CameraAction = () => {
             )}
           </AnimatePresence>
 
+          {/* Processing overlay (background removal) */}
+          {phase === "processing" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 z-10 gap-4">
+              <motion.div
+                className="h-16 w-16 rounded-full border-4 border-t-transparent"
+                style={{ borderColor: primaryColor ? `hsl(${primaryColor})` : undefined, borderTopColor: "transparent" }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              />
+              <p className="text-foreground font-display text-xl">Odstraňuji pozadí…</p>
+              <p className="text-muted-foreground text-sm">Může to trvat několik sekund</p>
+            </div>
+          )}
+
           {/* Uploading overlay */}
           {phase === "uploading" && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10">
