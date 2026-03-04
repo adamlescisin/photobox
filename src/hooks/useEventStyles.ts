@@ -52,7 +52,7 @@ export const useUploadStyleAsset = () => {
     }: {
       eventId: string;
       file: File;
-      type: "logo" | "watermark";
+      type: "logo" | "watermark" | "background";
     }) => {
       const ext = file.name.split(".").pop();
       const path = `${eventId}/${type}.${ext}`;

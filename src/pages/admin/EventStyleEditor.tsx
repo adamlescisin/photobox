@@ -26,10 +26,13 @@ const EventStyleEditor = () => {
   const [wmShowDate, setWmShowDate] = useState(false);
   const [wmShowLogo, setWmShowLogo] = useState(false);
   const [wmShowFrame, setWmShowFrame] = useState(false);
+  const [removeBackground, setRemoveBackground] = useState(false);
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const watermarkInputRef = useRef<HTMLInputElement>(null);
+  const backgroundInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (style) {
@@ -41,6 +44,8 @@ const EventStyleEditor = () => {
       setWmShowDate(style.watermark_show_date ?? false);
       setWmShowLogo(style.watermark_show_logo ?? false);
       setWmShowFrame(style.watermark_show_frame ?? false);
+      setRemoveBackground((style as any).remove_background ?? false);
+      setBackgroundImageUrl(style.background_image_url);
     }
   }, [style]);
 
@@ -59,6 +64,8 @@ const EventStyleEditor = () => {
           watermark_show_date: wmShowDate,
           watermark_show_logo: wmShowLogo,
           watermark_show_frame: wmShowFrame,
+          remove_background: removeBackground,
+          background_image_url: backgroundImageUrl,
         },
       });
       toast.success("Styling uložen");
@@ -71,14 +78,15 @@ const EventStyleEditor = () => {
 
   const handleFileUpload = async (
     file: File,
-    type: "logo" | "watermark"
+    type: "logo" | "watermark" | "background"
   ) => {
     if (!id) return;
     try {
       const url = await uploadAsset.mutateAsync({ eventId: id, file, type });
       if (type === "logo") setLogoUrl(url);
-      else setWatermarkUrl(url);
-      toast.success(`${type === "logo" ? "Logo" : "Watermark"} nahráno`);
+      else if (type === "watermark") setWatermarkUrl(url);
+      else setBackgroundImageUrl(url);
+      toast.success(`${type === "logo" ? "Logo" : type === "watermark" ? "Watermark" : "Pozadí"} nahráno`);
     } catch {
       toast.error("Nahrávání selhalo");
     }
@@ -246,6 +254,43 @@ const EventStyleEditor = () => {
                   Nahrát watermark
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Background */}
+          <Card>
+            <CardHeader><CardTitle className="text-base">Pozadí fotografií</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="remove-bg">Odstranit pozadí</Label>
+                  <p className="text-xs text-muted-foreground">Ponechá pouze osoby v popředí</p>
+                </div>
+                <Switch id="remove-bg" checked={removeBackground} onCheckedChange={setRemoveBackground} />
+              </div>
+              {removeBackground && (
+                <>
+                  <Separator />
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">Vlastní pozadí (nahradí odstraněné pozadí)</p>
+                    {backgroundImageUrl && (
+                      <div className="flex items-center gap-3 mb-2">
+                        <img src={backgroundImageUrl} alt="Pozadí" className="h-14 rounded-lg object-cover bg-muted" />
+                        <Button variant="ghost" size="sm" onClick={() => setBackgroundImageUrl(null)}>Odebrat</Button>
+                      </div>
+                    )}
+                    <input ref={backgroundInputRef} type="file" accept="image/*" className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, "background"); }} />
+                    <Button variant="outline" size="sm" onClick={() => backgroundInputRef.current?.click()} disabled={uploadAsset.isPending}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Nahrát pozadí
+                    </Button>
+                    {!backgroundImageUrl && (
+                      <p className="text-xs text-muted-foreground mt-1">Bez vlastního pozadí bude použita primární barva.</p>
+                    )}
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>

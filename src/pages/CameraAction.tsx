@@ -7,6 +7,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Camera, RotateCcw, Images, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { removeBackground } from "@imgly/background-removal";
 
 type Phase = "viewfinder" | "countdown" | "uploading" | "result" | "gallery";
 
@@ -158,12 +159,59 @@ const CameraAction = () => {
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    ctx.drawImage(video, 0, 0);
+
+    const shouldRemoveBg = (style as any)?.remove_background === true;
+
+    if (shouldRemoveBg) {
+      setPhase("uploading");
+
+      // Capture raw frame to a temp canvas
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = video.videoWidth;
+      tempCanvas.height = video.videoHeight;
+      const tempCtx = tempCanvas.getContext("2d")!;
+      tempCtx.drawImage(video, 0, 0);
+
+      try {
+        // Get raw frame as blob
+        const rawBlob = await new Promise<Blob>((res) =>
+          tempCanvas.toBlob((b) => res(b!), "image/png")
+        );
+
+        // Remove background
+        const fgBlob = await removeBackground(rawBlob);
+        const fgImg = await loadImage(URL.createObjectURL(fgBlob));
+
+        // Draw custom background or solid color
+        if (style?.background_image_url) {
+          try {
+            const bgImg = await loadImage(style.background_image_url);
+            ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+          } catch {
+            ctx.fillStyle = style?.primary_color ? `hsl(${style.primary_color})` : "#1a1a2e";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          }
+        } else {
+          ctx.fillStyle = style?.primary_color ? `hsl(${style.primary_color})` : "#1a1a2e";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Draw foreground (person) on top
+        ctx.drawImage(fgImg, 0, 0, canvas.width, canvas.height);
+      } catch (err) {
+        console.error("Background removal failed, using original:", err);
+        ctx.drawImage(video, 0, 0);
+      }
+    } else {
+      ctx.drawImage(video, 0, 0);
+    }
 
     // Apply watermark onto the canvas before exporting
     await applyWatermark(ctx, canvas.width, canvas.height);
 
-    setPhase("uploading");
+    if (!shouldRemoveBg) {
+      setPhase("uploading");
+    }
 
     canvas.toBlob(async (blob) => {
       if (!blob) {
