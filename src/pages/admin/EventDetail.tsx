@@ -239,6 +239,39 @@ const EventDetail = () => {
         </button>
       </div>
 
+      {/* Expiration Management */}
+      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CalendarOff className={`h-4 w-4 ${expirationEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
+            <Label>Expirace galerie</Label>
+          </div>
+          <Switch checked={expirationEnabled} onCheckedChange={setExpirationEnabled} />
+        </div>
+        {expirationEnabled && (
+          <input
+            type="date"
+            value={expiresAt}
+            onChange={(e) => setExpiresAt(e.target.value)}
+            className="w-full rounded-xl border border-border bg-secondary px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+        )}
+        <button
+          onClick={async () => {
+            if (!id) return;
+            try {
+              await updateEvent.mutateAsync({ id, expires_at: expirationEnabled ? expiresAt : null });
+              toast.success(expirationEnabled ? "Expirace nastavena" : "Expirace odstraněna");
+            } catch {
+              toast.error("Nepodařilo se uložit expiraci");
+            }
+          }}
+          className="rounded-lg bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground hover:bg-muted transition-colors"
+        >
+          Uložit expiraci
+        </button>
+      </div>
+
       <div>
         <h2 className="font-display text-lg font-semibold mb-3">
           Fotky ({photos?.length ?? 0})
