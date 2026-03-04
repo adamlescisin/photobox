@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { removeBackground } from "@imgly/background-removal";
 
-type Phase = "viewfinder" | "countdown" | "uploading" | "result" | "gallery";
+type Phase = "viewfinder" | "countdown" | "processing" | "uploading" | "result" | "gallery";
 
 const CameraAction = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -163,7 +163,7 @@ const CameraAction = () => {
     const shouldRemoveBg = (style as any)?.remove_background === true;
 
     if (shouldRemoveBg) {
-      setPhase("uploading");
+      setPhase("processing");
 
       // Capture raw frame to a temp canvas
       const tempCanvas = document.createElement("canvas");
@@ -209,9 +209,7 @@ const CameraAction = () => {
     // Apply watermark onto the canvas before exporting
     await applyWatermark(ctx, canvas.width, canvas.height);
 
-    if (!shouldRemoveBg) {
-      setPhase("uploading");
-    }
+    setPhase("uploading");
 
     canvas.toBlob(async (blob) => {
       if (!blob) {
@@ -335,6 +333,20 @@ const CameraAction = () => {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Processing overlay (background removal) */}
+          {phase === "processing" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 z-10 gap-4">
+              <motion.div
+                className="h-16 w-16 rounded-full border-4 border-t-transparent"
+                style={{ borderColor: primaryColor ? `hsl(${primaryColor})` : undefined, borderTopColor: "transparent" }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              />
+              <p className="text-foreground font-display text-xl">Odstraňuji pozadí…</p>
+              <p className="text-muted-foreground text-sm">Může to trvat několik sekund</p>
+            </div>
+          )}
 
           {/* Uploading overlay */}
           {phase === "uploading" && (
