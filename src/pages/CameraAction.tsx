@@ -163,7 +163,7 @@ const CameraAction = () => {
     const shouldRemoveBg = (style as any)?.remove_background === true;
 
     if (shouldRemoveBg) {
-      setPhase("uploading");
+      setPhase("processing");
 
       // Capture raw frame to a temp canvas
       const tempCanvas = document.createElement("canvas");
