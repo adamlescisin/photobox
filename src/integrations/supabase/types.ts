@@ -121,6 +121,7 @@ export type Database = {
           created_at: string
           date: string
           description: string | null
+          expires_at: string | null
           id: string
           name: string
           password_hash: string | null
@@ -131,6 +132,7 @@ export type Database = {
           created_at?: string
           date: string
           description?: string | null
+          expires_at?: string | null
           id?: string
           name: string
           password_hash?: string | null
@@ -141,6 +143,7 @@ export type Database = {
           created_at?: string
           date?: string
           description?: string | null
+          expires_at?: string | null
           id?: string
           name?: string
           password_hash?: string | null
