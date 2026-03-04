@@ -86,7 +86,7 @@ export const useCreateEvent = () => {
 export const useUpdateEvent = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string } & Partial<Event>) => {
+    mutationFn: async ({ id, ...updates }: { id: string } & Record<string, any>) => {
       const { data, error } = await supabase
         .from("events")
         .update(updates)

@@ -74,6 +74,24 @@ const EventGallery = () => {
     );
   }
 
+  // Check expiration
+  const isExpired = event.expires_at && new Date(event.expires_at) < new Date();
+  if (isExpired) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="w-full max-w-sm space-y-4 text-center">
+          <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-muted">
+            <Camera className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h1 className="font-display text-2xl font-bold">Galerie není aktivní</h1>
+          <p className="text-sm text-muted-foreground">
+            Omlouváme se, ale tato galerie již není dostupná. Platnost galerie vypršela.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (needsPassword && !unlocked) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
