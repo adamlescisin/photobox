@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
-import { useEvent } from "@/hooks/useEvents";
+import { useEvent, useUpdateEvent } from "@/hooks/useEvents";
 import { usePhotos, useDeletePhoto, useTogglePhotoHidden } from "@/hooks/usePhotos";
-import { Camera, QrCode, Palette, ArrowLeft, Copy, Lock, LockOpen, Aperture } from "lucide-react";
+import { Camera, QrCode, Palette, ArrowLeft, Copy, Lock, LockOpen, Aperture, Pencil, Check, X, CalendarOff } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 import PhotoGrid from "@/components/PhotoGrid";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { setEventPassword } from "@/lib/event-password";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { format, addDays } from "date-fns";
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,16 +18,35 @@ const EventDetail = () => {
   const { data: photos } = usePhotos(id);
   const deletePhoto = useDeletePhoto();
   const toggleHidden = useTogglePhotoHidden();
+  const updateEvent = useUpdateEvent();
   const [showQR, setShowQR] = useState(false);
   const [pwEnabled, setPwEnabled] = useState(false);
   const [pwValue, setPwValue] = useState("");
   const [pwSaving, setPwSaving] = useState(false);
   const [pwInitialized, setPwInitialized] = useState(false);
 
+  // Inline editing state
+  const [editingName, setEditingName] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editingDate, setEditingDate] = useState(false);
+  const [editDate, setEditDate] = useState("");
+
+  // Expiration state
+  const [expirationInitialized, setExpirationInitialized] = useState(false);
+  const [expirationEnabled, setExpirationEnabled] = useState(false);
+  const [expiresAt, setExpiresAt] = useState("");
+
   // Sync password toggle with event data
   if (event && !pwInitialized) {
     setPwEnabled(!!event.password_hash);
     setPwInitialized(true);
+  }
+
+  // Sync expiration with event data
+  if (event && !expirationInitialized) {
+    setExpirationEnabled(!!event.expires_at);
+    setExpiresAt(event.expires_at || format(addDays(new Date(event.date), 30), "yyyy-MM-dd"));
+    setExpirationInitialized(true);
   }
 
   if (isLoading) {
