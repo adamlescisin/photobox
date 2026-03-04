@@ -256,6 +256,43 @@ const EventStyleEditor = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Background */}
+          <Card>
+            <CardHeader><CardTitle className="text-base">Pozadí fotografií</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="remove-bg">Odstranit pozadí</Label>
+                  <p className="text-xs text-muted-foreground">Ponechá pouze osoby v popředí</p>
+                </div>
+                <Switch id="remove-bg" checked={removeBackground} onCheckedChange={setRemoveBackground} />
+              </div>
+              {removeBackground && (
+                <>
+                  <Separator />
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">Vlastní pozadí (nahradí odstraněné pozadí)</p>
+                    {backgroundImageUrl && (
+                      <div className="flex items-center gap-3 mb-2">
+                        <img src={backgroundImageUrl} alt="Pozadí" className="h-14 rounded-lg object-cover bg-muted" />
+                        <Button variant="ghost" size="sm" onClick={() => setBackgroundImageUrl(null)}>Odebrat</Button>
+                      </div>
+                    )}
+                    <input ref={backgroundInputRef} type="file" accept="image/*" className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, "background"); }} />
+                    <Button variant="outline" size="sm" onClick={() => backgroundInputRef.current?.click()} disabled={uploadAsset.isPending}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Nahrát pozadí
+                    </Button>
+                    {!backgroundImageUrl && (
+                      <p className="text-xs text-muted-foreground mt-1">Bez vlastního pozadí bude použita primární barva.</p>
+                    )}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Live Preview Panel */}
