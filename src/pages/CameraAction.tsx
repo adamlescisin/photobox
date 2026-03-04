@@ -209,9 +209,7 @@ const CameraAction = () => {
     // Apply watermark onto the canvas before exporting
     await applyWatermark(ctx, canvas.width, canvas.height);
 
-    if (!shouldRemoveBg) {
-      setPhase("uploading");
-    }
+    setPhase("uploading");
 
     canvas.toBlob(async (blob) => {
       if (!blob) {
