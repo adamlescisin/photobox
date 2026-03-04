@@ -84,8 +84,9 @@ const EventStyleEditor = () => {
     try {
       const url = await uploadAsset.mutateAsync({ eventId: id, file, type });
       if (type === "logo") setLogoUrl(url);
-      else setWatermarkUrl(url);
-      toast.success(`${type === "logo" ? "Logo" : "Watermark"} nahráno`);
+      else if (type === "watermark") setWatermarkUrl(url);
+      else setBackgroundImageUrl(url);
+      toast.success(`${type === "logo" ? "Logo" : type === "watermark" ? "Watermark" : "Pozadí"} nahráno`);
     } catch {
       toast.error("Nahrávání selhalo");
     }
