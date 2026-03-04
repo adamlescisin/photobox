@@ -58,6 +58,7 @@ export type Database = {
           id: string
           logo_url: string | null
           primary_color: string | null
+          remove_background: boolean
           secondary_color: string | null
           updated_at: string
           watermark_show_date: boolean
@@ -73,6 +74,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           primary_color?: string | null
+          remove_background?: boolean
           secondary_color?: string | null
           updated_at?: string
           watermark_show_date?: boolean
@@ -88,6 +90,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           primary_color?: string | null
+          remove_background?: boolean
           secondary_color?: string | null
           updated_at?: string
           watermark_show_date?: boolean
