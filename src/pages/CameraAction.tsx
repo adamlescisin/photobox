@@ -7,6 +7,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Camera, RotateCcw, Images, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { removeBackground } from "@imgly/background-removal";
 
 type Phase = "viewfinder" | "countdown" | "uploading" | "result" | "gallery";
 
