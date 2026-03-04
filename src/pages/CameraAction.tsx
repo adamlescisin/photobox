@@ -209,6 +209,10 @@ const CameraAction = () => {
     // Apply watermark onto the canvas before exporting
     await applyWatermark(ctx, canvas.width, canvas.height);
 
+    if (!shouldRemoveBg) {
+      setPhase("uploading");
+    }
+
     canvas.toBlob(async (blob) => {
       if (!blob) {
         toast.error("Nepodařilo se zachytit snímek");
