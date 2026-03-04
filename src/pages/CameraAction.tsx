@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { removeBackground } from "@imgly/background-removal";
 
-type Phase = "viewfinder" | "countdown" | "uploading" | "result" | "gallery";
+type Phase = "viewfinder" | "countdown" | "processing" | "uploading" | "result" | "gallery";
 
 const CameraAction = () => {
   const { slug } = useParams<{ slug: string }>();
