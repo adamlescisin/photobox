@@ -56,6 +56,24 @@ const EventGallery = () => {
     }
   };
 
+  const visiblePhotos = photos?.filter((p) => !p.hidden) ?? [];
+  const selectionMode = selectedIds.size > 0;
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const selectAll = useCallback(() => {
+    setSelectedIds((prev) =>
+      prev.size === visiblePhotos.length ? new Set() : new Set(visiblePhotos.map((p) => p.id))
+    );
+  }, [visiblePhotos]);
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
