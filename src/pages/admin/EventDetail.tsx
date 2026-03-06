@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useEvent, useUpdateEvent } from "@/hooks/useEvents";
 import { usePhotos, useDeletePhoto, useTogglePhotoHidden } from "@/hooks/usePhotos";
 import { Camera, QrCode, Palette, ArrowLeft, Copy, Lock, LockOpen, Aperture, Pencil, Check, X, CalendarOff } from "lucide-react";
+import PhotoSelectionToolbar from "@/components/PhotoSelectionToolbar";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 import PhotoGrid from "@/components/PhotoGrid";
@@ -35,6 +36,24 @@ const EventDetail = () => {
   const [expirationInitialized, setExpirationInitialized] = useState(false);
   const [expirationEnabled, setExpirationEnabled] = useState(false);
   const [expiresAt, setExpiresAt] = useState("");
+
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const selectionMode = selectedIds.size > 0;
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const selectAllPhotos = () => {
+    if (!photos) return;
+    setSelectedIds((prev) =>
+      prev.size === photos.length ? new Set() : new Set(photos.map((p) => p.id))
+    );
+  };
 
   // Sync password toggle with event data
   if (event && !pwInitialized) {
@@ -277,13 +296,25 @@ const EventDetail = () => {
           Fotky ({photos?.length ?? 0})
         </h2>
         {photos && photos.length > 0 ? (
-          <PhotoGrid
-            photos={photos}
-            eventSlug={event.slug}
-            isAdmin
-            onDelete={handleDelete}
-            onToggleHide={handleToggleHide}
-          />
+          <>
+            <PhotoSelectionToolbar
+              selectedIds={selectedIds}
+              photos={photos}
+              onClear={() => setSelectedIds(new Set())}
+              onSelectAll={selectAllPhotos}
+              totalCount={photos.length}
+            />
+            <PhotoGrid
+              photos={photos}
+              eventSlug={event.slug}
+              isAdmin
+              onDelete={handleDelete}
+              onToggleHide={handleToggleHide}
+              selectionMode={selectionMode}
+              selectedIds={selectedIds}
+              onToggleSelect={toggleSelect}
+            />
+          </>
         ) : (
           <p className="text-sm text-muted-foreground">Žádné fotky.</p>
         )}
