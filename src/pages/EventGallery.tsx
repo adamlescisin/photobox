@@ -5,7 +5,8 @@ import { verifyEventPassword } from "@/lib/event-password";
 import EventHeader from "@/components/EventHeader";
 import PhotoGrid from "@/components/PhotoGrid";
 import { Camera, Lock } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import PhotoSelectionToolbar from "@/components/PhotoSelectionToolbar";
 
 const EventGallery = () => {
   const { slug } = useParams<{ slug: string }>();
