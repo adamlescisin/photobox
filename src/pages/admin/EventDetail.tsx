@@ -37,6 +37,24 @@ const EventDetail = () => {
   const [expirationEnabled, setExpirationEnabled] = useState(false);
   const [expiresAt, setExpiresAt] = useState("");
 
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const selectionMode = selectedIds.size > 0;
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const selectAllPhotos = () => {
+    if (!photos) return;
+    setSelectedIds((prev) =>
+      prev.size === photos.length ? new Set() : new Set(photos.map((p) => p.id))
+    );
+  };
+
   // Sync password toggle with event data
   if (event && !pwInitialized) {
     setPwEnabled(!!event.password_hash);
