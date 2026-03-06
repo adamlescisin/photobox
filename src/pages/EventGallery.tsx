@@ -19,6 +19,7 @@ const EventGallery = () => {
   const [password, setPassword] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (event?.password_hash) {
