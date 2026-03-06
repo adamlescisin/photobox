@@ -58,6 +58,7 @@ const Dashboard = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
               >
+              <div className="flex items-center gap-2">
                 <Link
                   to={`/admin/events/${event.id}`}
                   className="flex flex-1 items-center justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:bg-secondary"
@@ -91,6 +92,7 @@ const Dashboard = () => {
                     <Copy className="h-4 w-4" />
                   </button>
                 </div>
+              </div>
               </motion.div>
             ))}
           </div>
