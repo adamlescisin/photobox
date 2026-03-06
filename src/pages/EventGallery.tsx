@@ -129,6 +129,23 @@ const EventGallery = () => {
   }
 
   const visiblePhotos = photos?.filter((p) => !p.hidden) ?? [];
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const selectionMode = selectedIds.size > 0;
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const selectAll = useCallback(() => {
+    setSelectedIds((prev) =>
+      prev.size === visiblePhotos.length ? new Set() : new Set(visiblePhotos.map((p) => p.id))
+    );
+  }, [visiblePhotos]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -139,8 +156,21 @@ const EventGallery = () => {
             {visiblePhotos.length} {visiblePhotos.length === 1 ? "fotka" : visiblePhotos.length < 5 ? "fotky" : "fotek"}
           </p>
         </div>
+        <PhotoSelectionToolbar
+          selectedIds={selectedIds}
+          photos={visiblePhotos}
+          onClear={() => setSelectedIds(new Set())}
+          onSelectAll={selectAll}
+          totalCount={visiblePhotos.length}
+        />
         {visiblePhotos.length > 0 ? (
-          <PhotoGrid photos={visiblePhotos} eventSlug={event.slug} />
+          <PhotoGrid
+            photos={visiblePhotos}
+            eventSlug={event.slug}
+            selectionMode={selectionMode}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+          />
         ) : (
           <p className="text-center text-muted-foreground py-12">Zatím žádné fotky.</p>
         )}

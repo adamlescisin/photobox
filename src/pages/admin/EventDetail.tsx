@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useEvent, useUpdateEvent } from "@/hooks/useEvents";
 import { usePhotos, useDeletePhoto, useTogglePhotoHidden } from "@/hooks/usePhotos";
 import { Camera, QrCode, Palette, ArrowLeft, Copy, Lock, LockOpen, Aperture, Pencil, Check, X, CalendarOff } from "lucide-react";
+import PhotoSelectionToolbar from "@/components/PhotoSelectionToolbar";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 import PhotoGrid from "@/components/PhotoGrid";
