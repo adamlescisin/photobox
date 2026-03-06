@@ -6,14 +6,70 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-async function hashPassword(password: string): Promise<string> {
+// --- PBKDF2 password hashing with random salt ---
+async function hashPassword(password: string, salt?: Uint8Array): Promise<{ salt: string; hash: string }> {
   const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  if (!salt) {
+    salt = new Uint8Array(16);
+    crypto.getRandomValues(salt);
+  }
+
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: salt,
+      iterations: 100000,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    256
+  );
+
+  const saltHex = Array.from(salt).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const hashHex = Array.from(new Uint8Array(derivedBits)).map((b) => b.toString(16).padStart(2, "0")).join("");
+
+  return { salt: saltHex, hash: hashHex };
 }
+
+function hexToBytes(hex: string): Uint8Array {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
+  }
+  return bytes;
+}
+
+// --- In-memory rate limiting ---
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX = 5; // max 5 attempts per minute per key
+
+function isRateLimited(key: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(key);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT_MAX;
+}
+
+// Clean up old entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap) {
+    if (now > entry.resetAt) rateLimitMap.delete(key);
+  }
+}, 60_000);
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -62,7 +118,12 @@ Deno.serve(async (req) => {
         });
       }
 
-      const passwordHash = password ? await hashPassword(password) : null;
+      let passwordHash: string | null = null;
+      if (password) {
+        const { salt, hash } = await hashPassword(password);
+        // Store as "salt:hash" format
+        passwordHash = `${salt}:${hash}`;
+      }
 
       const { error } = await supabase
         .from("events")
@@ -86,6 +147,19 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Rate limiting by IP + identifier
+      const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+      const rateLimitKey = `${clientIp}:${slug || event_id}`;
+      if (isRateLimited(rateLimitKey)) {
+        return new Response(
+          JSON.stringify({ error: "Too many attempts. Please try again later." }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
+          }
+        );
+      }
+
       let query = supabase.from("events").select("id, password_hash");
       if (slug) query = query.eq("slug", slug);
       else query = query.eq("id", event_id);
@@ -105,8 +179,26 @@ Deno.serve(async (req) => {
         );
       }
 
-      const inputHash = await hashPassword(password || "");
-      const valid = inputHash === event.password_hash;
+      // Support both new "salt:hash" format and legacy plain SHA-256 hashes
+      let valid = false;
+      const storedHash = event.password_hash;
+
+      if (storedHash.includes(":")) {
+        // New PBKDF2 format: "salt:hash"
+        const [saltHex, expectedHash] = storedHash.split(":");
+        const salt = hexToBytes(saltHex);
+        const { hash: inputHash } = await hashPassword(password || "", salt);
+        valid = inputHash === expectedHash;
+      } else {
+        // Legacy SHA-256 format (for backwards compatibility during migration)
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password || "");
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        const inputHash = Array.from(new Uint8Array(hashBuffer))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        valid = inputHash === storedHash;
+      }
 
       return new Response(
         JSON.stringify({ valid }),
@@ -122,7 +214,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

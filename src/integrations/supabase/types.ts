@@ -249,6 +249,7 @@ export type Database = {
           created_at: string | null
           date: string | null
           description: string | null
+          expires_at: string | null
           id: string | null
           is_password_protected: boolean | null
           name: string | null
@@ -259,6 +260,7 @@ export type Database = {
           created_at?: string | null
           date?: string | null
           description?: string | null
+          expires_at?: string | null
           id?: string | null
           is_password_protected?: never
           name?: string | null
@@ -269,6 +271,7 @@ export type Database = {
           created_at?: string | null
           date?: string | null
           description?: string | null
+          expires_at?: string | null
           id?: string | null
           is_password_protected?: never
           name?: string | null

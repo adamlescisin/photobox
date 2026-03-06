@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 
 export type Event = Tables<"events">;
+export type EventPublic = Tables<"events_public">;
 export type EventStyle = Tables<"event_styles">;
 
 export const useEvents = () => {
@@ -35,18 +36,19 @@ export const useEvent = (id?: string) => {
   });
 };
 
+/** Public-safe hook: queries the events_public view which excludes password_hash */
 export const useEventBySlug = (slug?: string) => {
   return useQuery({
-    queryKey: ["events", "slug", slug],
+    queryKey: ["events_public", "slug", slug],
     enabled: !!slug,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("events")
+        .from("events_public")
         .select("*")
         .eq("slug", slug!)
         .single();
       if (error) throw error;
-      return data as Event;
+      return data as EventPublic;
     },
   });
 };
@@ -108,5 +110,21 @@ export const useDeleteEvent = () => {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["events"] }),
+  });
+};
+
+export const useUpsertEventStyle = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (style: any) => {
+      const { data, error } = await supabase
+        .from("event_styles")
+        .upsert(style, { onConflict: "event_id" })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["event_styles"] }),
   });
 };
