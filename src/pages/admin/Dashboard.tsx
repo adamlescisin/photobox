@@ -60,7 +60,7 @@ const Dashboard = () => {
               >
                 <Link
                   to={`/admin/events/${event.id}`}
-                  className="flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:bg-secondary"
+                  className="flex flex-1 items-center justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:bg-secondary"
                 >
                   <div>
                     <p className="font-medium">{event.name}</p>
@@ -70,6 +70,27 @@ const Dashboard = () => {
                     Otevřít
                   </span>
                 </Link>
+                <div className="flex gap-1">
+                  <a
+                    href={`/g/${event.slug}/action`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
+                    title="Otevřít Action!"
+                  >
+                    <Aperture className="h-4 w-4" />
+                  </a>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/g/${event.slug}`);
+                      toast.success("URL galerie zkopírována");
+                    }}
+                    className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
+                    title="Kopírovat URL galerie"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
+                </div>
               </motion.div>
             ))}
           </div>
