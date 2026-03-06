@@ -22,7 +22,7 @@ const EventGallery = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (event?.password_hash) {
+    if (event?.is_password_protected) {
       // Check session storage for previously verified
       const key = `event_unlocked_${event.id}`;
       if (sessionStorage.getItem(key) === "true") {

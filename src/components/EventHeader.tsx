@@ -1,8 +1,8 @@
-import type { Event, EventStyle } from "@/hooks/useEvents";
+import type { Event, EventPublic, EventStyle } from "@/hooks/useEvents";
 import { Camera } from "lucide-react";
 
 interface EventHeaderProps {
-  event: Event;
+  event: Event | EventPublic;
   style?: EventStyle | null;
   showBranding?: boolean;
 }
