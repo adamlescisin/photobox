@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Plus, Calendar } from "lucide-react";
+import { Plus, Calendar, Aperture, Copy } from "lucide-react";
+import { toast } from "sonner";
 import { useEvents } from "@/hooks/useEvents";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
