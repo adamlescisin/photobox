@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Plus, Calendar } from "lucide-react";
+import { Plus, Calendar, Aperture, Copy } from "lucide-react";
+import { toast } from "sonner";
 import { useEvents } from "@/hooks/useEvents";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
@@ -41,22 +42,45 @@ const EventList = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
             >
-              <Link
-                to={`/admin/events/${event.id}`}
-                className="group flex items-center gap-4 rounded-xl border border-border gradient-card p-4 sm:p-5 transition-all hover:shadow-glow hover:border-primary/30"
-              >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                  <Calendar className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-2">
+                <Link
+                  to={`/admin/events/${event.id}`}
+                  className="group flex flex-1 items-center gap-4 rounded-xl border border-border gradient-card p-4 sm:p-5 transition-all hover:shadow-glow hover:border-primary/30"
+                >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                    <Calendar className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-display font-semibold truncate group-hover:text-primary transition-colors">
+                      {event.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      {event.date} · <span className="text-foreground/70">/{event.slug}</span>
+                    </p>
+                  </div>
+                </Link>
+                <div className="flex flex-col gap-1">
+                  <a
+                    href={`/g/${event.slug}/action`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
+                    title="Otevřít Action!"
+                  >
+                    <Aperture className="h-4 w-4" />
+                  </a>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/g/${event.slug}`);
+                      toast.success("URL galerie zkopírována");
+                    }}
+                    className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
+                    title="Kopírovat URL galerie"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-display font-semibold truncate group-hover:text-primary transition-colors">
-                    {event.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {event.date} · <span className="text-foreground/70">/{event.slug}</span>
-                  </p>
-                </div>
-              </Link>
+              </div>
             </motion.div>
           ))}
         </div>
