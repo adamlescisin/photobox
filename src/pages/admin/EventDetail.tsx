@@ -296,13 +296,25 @@ const EventDetail = () => {
           Fotky ({photos?.length ?? 0})
         </h2>
         {photos && photos.length > 0 ? (
-          <PhotoGrid
-            photos={photos}
-            eventSlug={event.slug}
-            isAdmin
-            onDelete={handleDelete}
-            onToggleHide={handleToggleHide}
-          />
+          <>
+            <PhotoSelectionToolbar
+              selectedIds={selectedIds}
+              photos={photos}
+              onClear={() => setSelectedIds(new Set())}
+              onSelectAll={selectAllPhotos}
+              totalCount={photos.length}
+            />
+            <PhotoGrid
+              photos={photos}
+              eventSlug={event.slug}
+              isAdmin
+              onDelete={handleDelete}
+              onToggleHide={handleToggleHide}
+              selectionMode={selectionMode}
+              selectedIds={selectedIds}
+              onToggleSelect={toggleSelect}
+            />
+          </>
         ) : (
           <p className="text-sm text-muted-foreground">Žádné fotky.</p>
         )}

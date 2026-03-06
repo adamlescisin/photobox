@@ -130,7 +130,6 @@ const EventGallery = () => {
   }
 
   const visiblePhotos = photos?.filter((p) => !p.hidden) ?? [];
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const selectionMode = selectedIds.size > 0;
 
   const toggleSelect = useCallback((id: string) => {
