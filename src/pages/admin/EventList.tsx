@@ -1,9 +1,20 @@
 import { Link } from "react-router-dom";
-import { Plus, Calendar, Aperture, Copy } from "lucide-react";
+import { Plus, Calendar, Aperture, Copy, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useEvents } from "@/hooks/useEvents";
+import { useEvents, useDeleteEvent } from "@/hooks/useEvents";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const EventList = () => {
   const { data: events, isLoading } = useEvents();
