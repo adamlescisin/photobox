@@ -68,6 +68,7 @@ const EventList = () => {
                     </h3>
                     <p className="text-sm text-muted-foreground mt-0.5">
                       {event.date} · <span className="text-foreground/70">/{event.slug}</span>
+                      {!event.active && <span className="ml-2 text-xs rounded-md bg-muted text-muted-foreground px-1.5 py-0.5">Neaktivní</span>}
                     </p>
                   </div>
                 </Link>
