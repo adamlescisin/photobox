@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useEvent, useUpdateEvent } from "@/hooks/useEvents";
 import { usePhotos, useDeletePhoto, useTogglePhotoHidden } from "@/hooks/usePhotos";
-import { Camera, QrCode, Palette, ArrowLeft, Copy, Lock, LockOpen, Aperture, Pencil, Check, X, CalendarOff } from "lucide-react";
+import { Camera, QrCode, Palette, ArrowLeft, Copy, Lock, LockOpen, Aperture, Pencil, Check, X, CalendarOff, Power } from "lucide-react";
 import PhotoSelectionToolbar from "@/components/PhotoSelectionToolbar";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
@@ -256,6 +256,31 @@ const EventDetail = () => {
         >
           {pwSaving ? "Ukládání…" : "Uložit heslo"}
         </button>
+      </div>
+
+      {/* Active Toggle */}
+      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Power className={`h-4 w-4 ${event.active ? 'text-primary' : 'text-muted-foreground'}`} />
+            <Label>Aktivní galerie</Label>
+          </div>
+          <Switch
+            checked={event.active}
+            onCheckedChange={async (checked) => {
+              if (!id) return;
+              try {
+                await updateEvent.mutateAsync({ id, active: checked });
+                toast.success(checked ? "Galerie aktivována" : "Galerie deaktivována");
+              } catch {
+                toast.error("Nepodařilo se změnit stav");
+              }
+            }}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Neaktivní galerie nebudou přístupné veřejnosti.
+        </p>
       </div>
 
       {/* Expiration Management */}

@@ -94,6 +94,23 @@ const EventGallery = () => {
     );
   }
 
+  // Check if event is inactive
+  if (event.active === false) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="w-full max-w-sm space-y-4 text-center">
+          <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-muted">
+            <Camera className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h1 className="font-display text-2xl font-bold">Tato akce není aktivní</h1>
+          <p className="text-sm text-muted-foreground">
+            Omlouváme se, ale tato galerie momentálně není dostupná.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Check expiration
   const isExpired = event.expires_at && new Date(event.expires_at) < new Date();
   if (isExpired) {

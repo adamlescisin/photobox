@@ -118,6 +118,7 @@ export type Database = {
       }
       events: {
         Row: {
+          active: boolean
           created_at: string
           date: string
           description: string | null
@@ -129,6 +130,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           date: string
           description?: string | null
@@ -140,6 +142,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           date?: string
           description?: string | null
@@ -246,6 +249,7 @@ export type Database = {
     Views: {
       events_public: {
         Row: {
+          active: boolean | null
           created_at: string | null
           date: string | null
           description: string | null
@@ -257,6 +261,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          active?: boolean | null
           created_at?: string | null
           date?: string | null
           description?: string | null
@@ -268,6 +273,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          active?: boolean | null
           created_at?: string | null
           date?: string | null
           description?: string | null

@@ -77,7 +77,10 @@ const Dashboard = () => {
                 >
                   <div>
                     <p className="font-medium">{event.name}</p>
-                    <p className="text-sm text-muted-foreground">{event.date}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {event.date}
+                      {!event.active && <span className="ml-2 text-xs rounded-md bg-muted text-muted-foreground px-1.5 py-0.5">Neaktivní</span>}
+                    </p>
                   </div>
                   <span className="text-xs rounded-md bg-primary/10 text-primary px-2 py-1 font-medium">
                     Otevřít
