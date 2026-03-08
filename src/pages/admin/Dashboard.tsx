@@ -19,6 +19,7 @@ import {
 const Dashboard = () => {
   const { data: events, isLoading } = useEvents();
   const { isAdmin, managedEventIds } = useAuth();
+  const deleteEvent = useDeleteEvent();
 
   const visibleEvents = events?.filter(
     (e) => isAdmin || managedEventIds.includes(e.id)
