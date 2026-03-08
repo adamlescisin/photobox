@@ -91,6 +91,42 @@ const EventList = () => {
                   >
                     <Copy className="h-4 w-4" />
                   </button>
+                  {isAdmin && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-destructive hover:border-destructive/30 transition-colors"
+                          title="Smazat akci"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Smazat akci „{event.name}"?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tato akce bude trvale smazána včetně všech fotek. Tuto operaci nelze vrátit zpět.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={async () => {
+                              try {
+                                await deleteEvent.mutateAsync(event.id);
+                                toast.success("Akce smazána");
+                              } catch {
+                                toast.error("Nepodařilo se smazat akci");
+                              }
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Smazat
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </div>
             </motion.div>
