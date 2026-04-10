@@ -89,18 +89,27 @@ const CameraAction = () => {
   ) => {
     if (!style || !event) return;
 
+    const s = style as any;
+    const fontFamily = s.watermark_font || "Space Grotesk";
+    const fontColor = s.watermark_font_color || "0 0% 100%";
+    const fontSizeMul = Number(s.watermark_font_size) || 1.0;
+    const logoSizeMul = Number(s.watermark_logo_size) || 1.0;
+    const borderColor = s.watermark_border_color || "0 0% 100%";
+    const borderSizeMul = Number(s.watermark_border_size) || 1.0;
+
     const padding = Math.round(w * 0.03);
-    const fontSize = Math.round(w * 0.025);
-    ctx.font = `600 ${fontSize}px 'Space Grotesk', sans-serif`;
-    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    const baseFontSize = Math.round(w * 0.025);
+    const fontSize = Math.round(baseFontSize * fontSizeMul);
+    ctx.font = `600 ${fontSize}px '${fontFamily}', sans-serif`;
+    ctx.fillStyle = `hsl(${fontColor} / 0.85)`;
     ctx.shadowColor = "rgba(0,0,0,0.6)";
     ctx.shadowBlur = 4;
 
     // Frame
     if (style.watermark_show_frame) {
       const inset = Math.round(w * 0.02);
-      ctx.strokeStyle = "rgba(255,255,255,0.5)";
-      ctx.lineWidth = Math.max(2, Math.round(w * 0.003));
+      ctx.strokeStyle = `hsl(${borderColor} / 0.5)`;
+      ctx.lineWidth = Math.max(2, Math.round(w * 0.003 * borderSizeMul));
       ctx.strokeRect(inset, inset, w - inset * 2, h - inset * 2);
     }
 
@@ -108,12 +117,17 @@ const CameraAction = () => {
 
     // Date (bottom-right)
     if (style.watermark_show_date) {
+      const dateFontSize = Math.round(baseFontSize * 0.85 * fontSizeMul);
+      ctx.font = `400 ${dateFontSize}px '${fontFamily}', sans-serif`;
+      ctx.fillStyle = `hsl(${fontColor} / 0.7)`;
       ctx.textAlign = "right";
       ctx.fillText(event.date, w - padding, bottomY);
     }
 
     // Name (bottom-left)
     if (style.watermark_show_name) {
+      ctx.font = `600 ${fontSize}px '${fontFamily}', sans-serif`;
+      ctx.fillStyle = `hsl(${fontColor} / 0.85)`;
       ctx.textAlign = "left";
       ctx.fillText(event.name, padding, bottomY);
     }
@@ -122,7 +136,8 @@ const CameraAction = () => {
     if (style.watermark_show_logo && style.logo_url) {
       try {
         const logoImg = await loadImage(style.logo_url);
-        const logoH = Math.round(h * 0.08);
+        const baseLogoH = Math.round(h * 0.08);
+        const logoH = Math.round(baseLogoH * logoSizeMul);
         const logoW = Math.round((logoImg.width / logoImg.height) * logoH);
         ctx.shadowBlur = 0;
         ctx.drawImage(logoImg, w - padding - logoW, padding, logoW, logoH);

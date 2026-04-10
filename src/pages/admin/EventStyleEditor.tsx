@@ -10,6 +10,21 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const FONT_OPTIONS = [
+  "Space Grotesk",
+  "Inter",
+  "Roboto",
+  "Playfair Display",
+  "Montserrat",
+  "Oswald",
+  "Lora",
+  "Poppins",
+  "Raleway",
+  "Dancing Script",
+];
 
 const EventStyleEditor = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +45,14 @@ const EventStyleEditor = () => {
   const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // New font/border settings
+  const [wmFont, setWmFont] = useState("Space Grotesk");
+  const [wmFontColor, setWmFontColor] = useState("0 0% 100%");
+  const [wmFontSize, setWmFontSize] = useState(1.0);
+  const [wmLogoSize, setWmLogoSize] = useState(1.0);
+  const [wmBorderColor, setWmBorderColor] = useState("0 0% 100%");
+  const [wmBorderSize, setWmBorderSize] = useState(1.0);
+
   const logoInputRef = useRef<HTMLInputElement>(null);
   const watermarkInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
@@ -46,6 +69,12 @@ const EventStyleEditor = () => {
       setWmShowFrame(style.watermark_show_frame ?? false);
       setRemoveBackground((style as any).remove_background ?? false);
       setBackgroundImageUrl(style.background_image_url);
+      setWmFont((style as any).watermark_font || "Space Grotesk");
+      setWmFontColor((style as any).watermark_font_color || "0 0% 100%");
+      setWmFontSize(Number((style as any).watermark_font_size) || 1.0);
+      setWmLogoSize(Number((style as any).watermark_logo_size) || 1.0);
+      setWmBorderColor((style as any).watermark_border_color || "0 0% 100%");
+      setWmBorderSize(Number((style as any).watermark_border_size) || 1.0);
     }
   }, [style]);
 
@@ -66,6 +95,12 @@ const EventStyleEditor = () => {
           watermark_show_frame: wmShowFrame,
           remove_background: removeBackground,
           background_image_url: backgroundImageUrl,
+          watermark_font: wmFont,
+          watermark_font_color: wmFontColor,
+          watermark_font_size: wmFontSize,
+          watermark_logo_size: wmLogoSize,
+          watermark_border_color: wmBorderColor,
+          watermark_border_size: wmBorderSize,
         },
       });
       toast.success("Styling uložen");
@@ -137,6 +172,10 @@ const EventStyleEditor = () => {
   if (!event) {
     return <div className="text-center py-20 text-muted-foreground">Akce nenalezena.</div>;
   }
+
+  const previewFontSize = Math.round(14 * wmFontSize);
+  const previewLogoH = Math.round(32 * wmLogoSize);
+  const previewBorderWidth = Math.max(1, Math.round(2 * wmBorderSize));
 
   return (
     <div className="space-y-6">
@@ -238,6 +277,113 @@ const EventStyleEditor = () => {
                   <Switch id="wm-frame" checked={wmShowFrame} onCheckedChange={setWmShowFrame} />
                 </div>
               </div>
+
+              <Separator />
+
+              {/* Font settings */}
+              <div className="space-y-3">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Písmo</p>
+                <div className="flex items-center gap-4">
+                  <Label className="w-20 shrink-0 text-xs">Font</Label>
+                  <Select value={wmFont} onValueChange={setWmFont}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FONT_OPTIONS.map((f) => (
+                        <SelectItem key={f} value={f} style={{ fontFamily: f }}>
+                          {f}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Label className="w-20 shrink-0 text-xs">Barva</Label>
+                  <input
+                    type="color"
+                    value={hslToHex(wmFontColor)}
+                    onChange={(e) => setWmFontColor(hexToHsl(e.target.value))}
+                    className="h-8 w-10 cursor-pointer rounded border border-border bg-transparent p-0.5"
+                  />
+                  <Input
+                    value={wmFontColor}
+                    onChange={(e) => setWmFontColor(e.target.value)}
+                    className="font-mono text-xs flex-1"
+                    placeholder="0 0% 100%"
+                  />
+                </div>
+                <div className="flex items-center gap-4">
+                  <Label className="w-20 shrink-0 text-xs">Velikost</Label>
+                  <Slider
+                    min={0.5}
+                    max={3}
+                    step={0.1}
+                    value={[wmFontSize]}
+                    onValueChange={([v]) => setWmFontSize(v)}
+                    className="flex-1"
+                  />
+                  <span className="text-xs text-muted-foreground w-10 text-right">{wmFontSize.toFixed(1)}×</span>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Logo size */}
+              {wmShowLogo && (
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Velikost loga</p>
+                  <div className="flex items-center gap-4">
+                    <Slider
+                      min={0.5}
+                      max={3}
+                      step={0.1}
+                      value={[wmLogoSize]}
+                      onValueChange={([v]) => setWmLogoSize(v)}
+                      className="flex-1"
+                    />
+                    <span className="text-xs text-muted-foreground w-10 text-right">{wmLogoSize.toFixed(1)}×</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Border settings */}
+              {wmShowFrame && (
+                <>
+                  <Separator />
+                  <div className="space-y-3">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Rámeček</p>
+                    <div className="flex items-center gap-4">
+                      <Label className="w-20 shrink-0 text-xs">Barva</Label>
+                      <input
+                        type="color"
+                        value={hslToHex(wmBorderColor)}
+                        onChange={(e) => setWmBorderColor(hexToHsl(e.target.value))}
+                        className="h-8 w-10 cursor-pointer rounded border border-border bg-transparent p-0.5"
+                      />
+                      <Input
+                        value={wmBorderColor}
+                        onChange={(e) => setWmBorderColor(e.target.value)}
+                        className="font-mono text-xs flex-1"
+                        placeholder="0 0% 100%"
+                      />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Label className="w-20 shrink-0 text-xs">Tloušťka</Label>
+                      <Slider
+                        min={0.5}
+                        max={5}
+                        step={0.25}
+                        value={[wmBorderSize]}
+                        onValueChange={([v]) => setWmBorderSize(v)}
+                        className="flex-1"
+                      />
+                      <span className="text-xs text-muted-foreground w-10 text-right">{wmBorderSize.toFixed(1)}×</span>
+                    </div>
+                  </div>
+                </>
+              )}
+
               <Separator />
               <div>
                 <p className="text-xs text-muted-foreground mb-2">Vlastní watermark obrázek (volitelné)</p>
@@ -360,8 +506,12 @@ const EventStyleEditor = () => {
                 {/* Frame overlay */}
                 {wmShowFrame && (
                   <div
-                    className="absolute inset-2 rounded-md border-2 pointer-events-none"
-                    style={{ borderColor: `hsl(${primaryColor} / 0.6)` }}
+                    className="absolute inset-2 rounded-md pointer-events-none"
+                    style={{
+                      borderColor: `hsl(${wmBorderColor} / 0.6)`,
+                      borderWidth: `${previewBorderWidth}px`,
+                      borderStyle: "solid",
+                    }}
                   />
                 )}
 
@@ -370,7 +520,8 @@ const EventStyleEditor = () => {
                   <img
                     src={logoUrl}
                     alt="Watermark logo"
-                    className="absolute top-3 right-3 h-8 w-8 object-contain opacity-60"
+                    className="absolute top-3 right-3 object-contain opacity-60"
+                    style={{ height: `${previewLogoH}px`, width: "auto" }}
                   />
                 )}
 
@@ -378,14 +529,25 @@ const EventStyleEditor = () => {
                 <div className="absolute bottom-3 left-3 space-y-0.5">
                   {wmShowName && (
                     <p
-                      className="text-xs font-semibold drop-shadow-lg"
-                      style={{ color: `hsl(${primaryColor})` }}
+                      className="font-semibold drop-shadow-lg"
+                      style={{
+                        color: `hsl(${wmFontColor})`,
+                        fontFamily: `'${wmFont}', sans-serif`,
+                        fontSize: `${previewFontSize}px`,
+                      }}
                     >
                       {event.name}
                     </p>
                   )}
                   {wmShowDate && (
-                    <p className="text-[10px] text-foreground/70 drop-shadow-lg">
+                    <p
+                      className="drop-shadow-lg"
+                      style={{
+                        color: `hsl(${wmFontColor} / 0.7)`,
+                        fontFamily: `'${wmFont}', sans-serif`,
+                        fontSize: `${Math.round(previewFontSize * 0.75)}px`,
+                      }}
+                    >
                       {event.date}
                     </p>
                   )}
