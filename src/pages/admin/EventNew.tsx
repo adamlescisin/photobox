@@ -34,8 +34,8 @@ const EventNew = () => {
 
       toast.success("Akce vytvořena!");
       navigate("/admin/events");
-    } catch (err: any) {
-      toast.error(err.message || "Chyba při vytváření akce");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Chyba při vytváření akce");
     } finally {
       setLoading(false);
     }

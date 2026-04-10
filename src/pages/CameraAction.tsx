@@ -89,12 +89,12 @@ const CameraAction = () => {
   ) => {
     if (!style || !event) return;
 
-    const s = style as any;
-    const fontFamily = s.watermark_font || "Space Grotesk";
-    const fontColor = s.watermark_font_color || "0 0% 100%";
+    const s = style as Record<string, unknown>;
+    const fontFamily = (s.watermark_font as string) || "Space Grotesk";
+    const fontColor = (s.watermark_font_color as string) || "0 0% 100%";
     const fontSizeMul = Number(s.watermark_font_size) || 1.0;
     const logoSizeMul = Number(s.watermark_logo_size) || 1.0;
-    const borderColor = s.watermark_border_color || "0 0% 100%";
+    const borderColor = (s.watermark_border_color as string) || "0 0% 100%";
     const borderSizeMul = Number(s.watermark_border_size) || 1.0;
 
     // Ensure font is loaded before drawing
@@ -182,7 +182,7 @@ const CameraAction = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const shouldRemoveBg = (style as any)?.remove_background === true;
+    const shouldRemoveBg = (style as Record<string, unknown>)?.remove_background === true;
 
     if (shouldRemoveBg) {
       setPhase("processing");

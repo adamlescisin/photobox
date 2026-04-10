@@ -88,7 +88,7 @@ export const useCreateEvent = () => {
 export const useUpdateEvent = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string } & Record<string, any>) => {
+    mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
       const { data, error } = await supabase
         .from("events")
         .update(updates)
@@ -116,7 +116,7 @@ export const useDeleteEvent = () => {
 export const useUpsertEventStyle = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (style: any) => {
+    mutationFn: async (style: TablesInsert<"event_styles">) => {
       const { data, error } = await supabase
         .from("event_styles")
         .upsert(style, { onConflict: "event_id" })

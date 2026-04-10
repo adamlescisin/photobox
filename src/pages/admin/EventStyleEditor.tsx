@@ -67,14 +67,16 @@ const EventStyleEditor = () => {
       setWmShowDate(style.watermark_show_date ?? false);
       setWmShowLogo(style.watermark_show_logo ?? false);
       setWmShowFrame(style.watermark_show_frame ?? false);
-      setRemoveBackground((style as any).remove_background ?? false);
+      
+      const s = style as Record<string, unknown>;
+      setRemoveBackground((s.remove_background as boolean) ?? false);
       setBackgroundImageUrl(style.background_image_url);
-      setWmFont((style as any).watermark_font || "Space Grotesk");
-      setWmFontColor((style as any).watermark_font_color || "0 0% 100%");
-      setWmFontSize(Number((style as any).watermark_font_size) || 1.0);
-      setWmLogoSize(Number((style as any).watermark_logo_size) || 1.0);
-      setWmBorderColor((style as any).watermark_border_color || "0 0% 100%");
-      setWmBorderSize(Number((style as any).watermark_border_size) || 1.0);
+      setWmFont((s.watermark_font as string) || "Space Grotesk");
+      setWmFontColor((s.watermark_font_color as string) || "0 0% 100%");
+      setWmFontSize(Number(s.watermark_font_size) || 1.0);
+      setWmLogoSize(Number(s.watermark_logo_size) || 1.0);
+      setWmBorderColor((s.watermark_border_color as string) || "0 0% 100%");
+      setWmBorderSize(Number(s.watermark_border_size) || 1.0);
     }
   }, [style]);
 
