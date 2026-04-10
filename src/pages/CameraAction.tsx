@@ -96,6 +96,8 @@ const CameraAction = () => {
     const logoSizeMul = Number(s.watermark_logo_size) || 1.0;
     const borderColor = (s.watermark_border_color as string) || "0 0% 100%";
     const borderSizeMul = Number(s.watermark_border_size) || 1.0;
+    const textOffsetX = Number(s.watermark_text_offset_x) || 1.0;
+    const textOffsetY = Number(s.watermark_text_offset_y) || 1.0;
 
     // Ensure font is loaded before drawing
     try {
@@ -107,6 +109,9 @@ const CameraAction = () => {
     const padding = Math.round(w * 0.03);
     const baseFontSize = Math.round(w * 0.025);
     const fontSize = Math.round(baseFontSize * fontSizeMul);
+    const paddingX = Math.round(padding * textOffsetX);
+    const paddingY = Math.round(padding * textOffsetY);
+    
     ctx.font = `600 ${fontSize}px '${fontFamily}', sans-serif`;
     ctx.fillStyle = `hsl(${fontColor} / 0.85)`;
     ctx.shadowColor = "rgba(0,0,0,0.6)";
@@ -120,7 +125,7 @@ const CameraAction = () => {
       ctx.strokeRect(inset, inset, w - inset * 2, h - inset * 2);
     }
 
-    const bottomY = h - padding;
+    const bottomY = h - paddingY;
 
     // Date (bottom-right)
     if (style.watermark_show_date) {
@@ -128,7 +133,7 @@ const CameraAction = () => {
       ctx.font = `400 ${dateFontSize}px '${fontFamily}', sans-serif`;
       ctx.fillStyle = `hsl(${fontColor} / 0.7)`;
       ctx.textAlign = "right";
-      ctx.fillText(event.date, w - padding, bottomY);
+      ctx.fillText(event.date, w - paddingX, bottomY);
     }
 
     // Name (bottom-left)
@@ -136,7 +141,7 @@ const CameraAction = () => {
       ctx.font = `600 ${fontSize}px '${fontFamily}', sans-serif`;
       ctx.fillStyle = `hsl(${fontColor} / 0.85)`;
       ctx.textAlign = "left";
-      ctx.fillText(event.name, padding, bottomY);
+      ctx.fillText(event.name, paddingX, bottomY);
     }
 
     // Logo (top-right corner)

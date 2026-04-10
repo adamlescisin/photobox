@@ -53,6 +53,10 @@ const EventStyleEditor = () => {
   const [wmBorderColor, setWmBorderColor] = useState("0 0% 100%");
   const [wmBorderSize, setWmBorderSize] = useState(1.0);
 
+  // Text positioning offsets
+  const [wmTextOffsetX, setWmTextOffsetX] = useState(1.0);
+  const [wmTextOffsetY, setWmTextOffsetY] = useState(1.0);
+
   const logoInputRef = useRef<HTMLInputElement>(null);
   const watermarkInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
@@ -77,6 +81,8 @@ const EventStyleEditor = () => {
       setWmLogoSize(Number(s.watermark_logo_size) || 1.0);
       setWmBorderColor((s.watermark_border_color as string) || "0 0% 100%");
       setWmBorderSize(Number(s.watermark_border_size) || 1.0);
+      setWmTextOffsetX(Number(s.watermark_text_offset_x) || 1.0);
+      setWmTextOffsetY(Number(s.watermark_text_offset_y) || 1.0);
     }
   }, [style]);
 
@@ -103,6 +109,8 @@ const EventStyleEditor = () => {
           watermark_logo_size: wmLogoSize,
           watermark_border_color: wmBorderColor,
           watermark_border_size: wmBorderSize,
+          watermark_text_offset_x: wmTextOffsetX,
+          watermark_text_offset_y: wmTextOffsetY,
         },
       });
       toast.success("Styling uložen");
@@ -178,6 +186,8 @@ const EventStyleEditor = () => {
   const previewFontSize = Math.round(14 * wmFontSize);
   const previewLogoH = Math.round(32 * wmLogoSize);
   const previewBorderWidth = Math.max(1, Math.round(2 * wmBorderSize));
+  const previewPaddingX = Math.round(12 * wmTextOffsetX);
+  const previewPaddingY = Math.round(12 * wmTextOffsetY);
 
   return (
     <div className="space-y-6">
@@ -326,6 +336,30 @@ const EventStyleEditor = () => {
                     className="flex-1"
                   />
                   <span className="text-xs text-muted-foreground w-10 text-right">{wmFontSize.toFixed(1)}×</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Label className="w-20 shrink-0 text-xs">Odsazení X</Label>
+                  <Slider
+                    min={0.5}
+                    max={3}
+                    step={0.1}
+                    value={[wmTextOffsetX]}
+                    onValueChange={([v]) => setWmTextOffsetX(v)}
+                    className="flex-1"
+                  />
+                  <span className="text-xs text-muted-foreground w-10 text-right">{wmTextOffsetX.toFixed(1)}×</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Label className="w-20 shrink-0 text-xs">Odsazení Y</Label>
+                  <Slider
+                    min={0.5}
+                    max={3}
+                    step={0.1}
+                    value={[wmTextOffsetY]}
+                    onValueChange={([v]) => setWmTextOffsetY(v)}
+                    className="flex-1"
+                  />
+                  <span className="text-xs text-muted-foreground w-10 text-right">{wmTextOffsetY.toFixed(1)}×</span>
                 </div>
               </div>
 
@@ -536,6 +570,8 @@ const EventStyleEditor = () => {
                         color: `hsl(${wmFontColor})`,
                         fontFamily: `'${wmFont}', sans-serif`,
                         fontSize: `${previewFontSize}px`,
+                        marginLeft: `${previewPaddingX}px`,
+                        marginBottom: `${Math.round(previewPaddingY * 0.3)}px`,
                       }}
                     >
                       {event.name}
@@ -548,6 +584,8 @@ const EventStyleEditor = () => {
                         color: `hsl(${wmFontColor} / 0.7)`,
                         fontFamily: `'${wmFont}', sans-serif`,
                         fontSize: `${Math.round(previewFontSize * 0.75)}px`,
+                        marginLeft: `${previewPaddingX}px`,
+                        marginBottom: `${previewPaddingY}px`,
                       }}
                     >
                       {event.date}
