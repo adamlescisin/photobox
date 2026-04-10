@@ -1,4 +1,4 @@
-project_id = "cntzmwdvyamocufcrtwf"
+project_id = "pidfcxyehcvalmuusuay"
 
 [functions.event-password]
 verify_jwt = false
