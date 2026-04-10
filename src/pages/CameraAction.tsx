@@ -97,6 +97,13 @@ const CameraAction = () => {
     const borderColor = s.watermark_border_color || "0 0% 100%";
     const borderSizeMul = Number(s.watermark_border_size) || 1.0;
 
+    // Ensure font is loaded before drawing
+    try {
+      await document.fonts.load(`600 16px '${fontFamily}'`);
+    } catch (err) {
+      console.warn("Font loading failed, using fallback:", err);
+    }
+
     const padding = Math.round(w * 0.03);
     const baseFontSize = Math.round(w * 0.025);
     const fontSize = Math.round(baseFontSize * fontSizeMul);
@@ -113,7 +120,7 @@ const CameraAction = () => {
       ctx.strokeRect(inset, inset, w - inset * 2, h - inset * 2);
     }
 
-    let bottomY = h - padding;
+    const bottomY = h - padding;
 
     // Date (bottom-right)
     if (style.watermark_show_date) {
