@@ -61,6 +61,12 @@ export type Database = {
           remove_background: boolean
           secondary_color: string | null
           updated_at: string
+          watermark_border_color: string
+          watermark_border_size: number
+          watermark_font: string
+          watermark_font_color: string
+          watermark_font_size: number
+          watermark_logo_size: number
           watermark_show_date: boolean
           watermark_show_frame: boolean
           watermark_show_logo: boolean
@@ -77,6 +83,12 @@ export type Database = {
           remove_background?: boolean
           secondary_color?: string | null
           updated_at?: string
+          watermark_border_color?: string
+          watermark_border_size?: number
+          watermark_font?: string
+          watermark_font_color?: string
+          watermark_font_size?: number
+          watermark_logo_size?: number
           watermark_show_date?: boolean
           watermark_show_frame?: boolean
           watermark_show_logo?: boolean
@@ -93,6 +105,12 @@ export type Database = {
           remove_background?: boolean
           secondary_color?: string | null
           updated_at?: string
+          watermark_border_color?: string
+          watermark_border_size?: number
+          watermark_font?: string
+          watermark_font_color?: string
+          watermark_font_size?: number
+          watermark_logo_size?: number
           watermark_show_date?: boolean
           watermark_show_frame?: boolean
           watermark_show_logo?: boolean
