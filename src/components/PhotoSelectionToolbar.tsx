@@ -1,7 +1,5 @@
 import { Download, X, CheckSquare } from "lucide-react";
 import { useState } from "react";
-import JSZip from "jszip";
-import { saveAs } from "file-saver";
 import { toast } from "sonner";
 import type { Photo } from "@/hooks/usePhotos";
 
@@ -13,6 +11,40 @@ interface Props {
   totalCount: number;
 }
 
+const isIOS = () =>
+  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+const downloadFile = async (url: string, filename: string) => {
+  const res = await fetch(url);
+  const blob = await res.blob();
+
+  if (isIOS()) {
+    // On iOS, open in new tab so the user gets the native share/save dialog
+    const objectUrl = URL.createObjectURL(blob);
+    const w = window.open(objectUrl, "_blank");
+    // If popup blocked, fall back to link click
+    if (!w) {
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.target = "_blank";
+      a.click();
+    }
+    // Clean up after a delay
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+  } else {
+    // Standard browser download
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(objectUrl);
+  }
+};
+
 const PhotoSelectionToolbar = ({ selectedIds, photos, onClear, onSelectAll, totalCount }: Props) => {
   const [downloading, setDownloading] = useState(false);
 
@@ -20,31 +52,19 @@ const PhotoSelectionToolbar = ({ selectedIds, photos, onClear, onSelectAll, tota
     const selected = photos.filter((p) => selectedIds.has(p.id));
     if (selected.length === 0) return;
 
-    if (selected.length === 1) {
-      // Single file – direct download
-      try {
-        const res = await fetch(selected[0].original_url);
-        const blob = await res.blob();
-        const ext = selected[0].original_url.split(".").pop()?.split("?")[0] || "jpg";
-        saveAs(blob, `photo.${ext}`);
-      } catch {
-        toast.error("Nepodařilo se stáhnout fotku");
-      }
-      return;
-    }
-
     setDownloading(true);
     try {
-      const zip = new JSZip();
-      const promises = selected.map(async (photo, i) => {
-        const res = await fetch(photo.original_url);
-        const blob = await res.blob();
+      // Download each file individually with a small delay between them
+      for (let i = 0; i < selected.length; i++) {
+        const photo = selected[i];
         const ext = photo.original_url.split(".").pop()?.split("?")[0] || "jpg";
-        zip.file(`photo_${i + 1}.${ext}`, blob);
-      });
-      await Promise.all(promises);
-      const content = await zip.generateAsync({ type: "blob" });
-      saveAs(content, "fotky.zip");
+        const filename = `photo_${i + 1}.${ext}`;
+        await downloadFile(photo.original_url, filename);
+        // Small delay to avoid overwhelming the browser
+        if (i < selected.length - 1) {
+          await new Promise((r) => setTimeout(r, 300));
+        }
+      }
       toast.success(`Staženo ${selected.length} fotek`);
     } catch {
       toast.error("Nepodařilo se stáhnout fotky");
