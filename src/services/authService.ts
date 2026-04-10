@@ -15,9 +15,7 @@ export interface AuthError {
 
 // Dynamic URL Helper
 const getURL = () => {
-  let url = process?.env?.NEXT_PUBLIC_VERCEL_URL ?? 
-           process?.env?.NEXT_PUBLIC_SITE_URL ?? 
-           'http://localhost:3000'
+  let url = import.meta.env.VITE_SITE_URL ?? 'http://localhost:3000'
   
   // Handle undefined or null url
   if (!url) {
