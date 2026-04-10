@@ -562,7 +562,13 @@ const EventStyleEditor = () => {
                 )}
 
                 {/* Text watermarks - bottom left */}
-                <div className="absolute bottom-3 left-3 space-y-0.5">
+                <div
+                  className="absolute space-y-0.5"
+                  style={{
+                    left: `${previewPaddingX}px`,
+                    bottom: `${previewPaddingY}px`,
+                  }}
+                >
                   {wmShowName && (
                     <p
                       className="font-semibold drop-shadow-lg"
@@ -570,8 +576,6 @@ const EventStyleEditor = () => {
                         color: `hsl(${wmFontColor})`,
                         fontFamily: `'${wmFont}', sans-serif`,
                         fontSize: `${previewFontSize}px`,
-                        marginLeft: `${previewPaddingX}px`,
-                        marginBottom: `${Math.round(previewPaddingY * 0.3)}px`,
                       }}
                     >
                       {event.name}
@@ -584,8 +588,6 @@ const EventStyleEditor = () => {
                         color: `hsl(${wmFontColor} / 0.7)`,
                         fontFamily: `'${wmFont}', sans-serif`,
                         fontSize: `${Math.round(previewFontSize * 0.75)}px`,
-                        marginLeft: `${previewPaddingX}px`,
-                        marginBottom: `${previewPaddingY}px`,
                       }}
                     >
                       {event.date}
